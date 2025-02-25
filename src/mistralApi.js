@@ -4,6 +4,13 @@ const { MISTRAL_API_KEY } = require("./config")
 async function generateMistralResponse(prompt) {
   console.log("Début de generateMistralResponse pour prompt:", prompt)
   try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => {
+      controller.abort()
+      console.log("Timeout atteint pour la requête Mistral")
+    }, 50000) // 50 secondes de timeout
+
+    console.log("Envoi de la requête à l'API Mistral...")
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -15,7 +22,10 @@ async function generateMistralResponse(prompt) {
         messages: [{ role: "user", content: prompt }],
         max_tokens: 1000,
       }),
+      signal: controller.signal,
     })
+
+    clearTimeout(timeout)
 
     console.log("Réponse reçue de l'API Mistral. Status:", response.status)
 
@@ -38,7 +48,10 @@ async function generateMistralResponse(prompt) {
     return generatedResponse
   } catch (error) {
     console.error("Erreur détaillée lors de la génération de la réponse Mistral:", error)
-    throw error // Propager l'erreur pour la gestion dans handleMessage
+    if (error.name === "AbortError") {
+      return "Désolé, la génération de la réponse a pris trop de temps. Veuillez réessayer avec une question plus courte ou plus simple."
+    }
+    return "Je suis désolé, mais je ne peux pas répondre pour le moment. Veuillez réessayer plus tard."
   }
 }
 
