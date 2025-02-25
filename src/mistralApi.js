@@ -6,6 +6,7 @@ function checkCreatorQuestion(prompt) {
   return (
   lowerPrompt.includes("qui t'a créé") ||
   lowerPrompt.includes("qui t'a crée") ||
+  lowerPrompt.includes("qui ta crée") ||
   lowerPrompt.includes("qui ta créé") || // sans apostrophe et sans accent
   lowerPrompt.includes("qui t'a cree") || // sans accents
   lowerPrompt.includes("qui ta cree") || // sans accents et sans apostrophe
