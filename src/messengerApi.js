@@ -14,10 +14,16 @@ async function handleMessage(senderId, receivedMessage) {
       console.log("Message envoyé avec succès")
     } else {
       console.log("Message reçu sans texte")
+      await sendTextMessage(senderId, "Désolé, je ne peux traiter que des messages texte.")
     }
   } catch (error) {
     console.error("Erreur lors du traitement du message:", error)
-    await sendTextMessage(senderId, "Désolé, j'ai rencontré une erreur en traitant votre message.")
+    let errorMessage = "Désolé, j'ai rencontré une erreur en traitant votre message. Veuillez réessayer plus tard."
+    if (error.message.includes("timeout")) {
+      errorMessage =
+        "Désolé, la génération de la réponse a pris trop de temps. Veuillez réessayer avec une question plus courte ou plus simple."
+    }
+    await sendTextMessage(senderId, errorMessage)
   }
   console.log("Fin de handleMessage")
 }
