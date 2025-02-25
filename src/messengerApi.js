@@ -4,7 +4,7 @@ const { generateMistralResponse } = require("./mistralApi")
 
 async function handleMessage(senderId, receivedMessage) {
   console.log("Début de handleMessage pour senderId:", senderId)
-  console.log("Message reçu:", receivedMessage)
+  console.log("Message reçu:", JSON.stringify(receivedMessage))
   try {
     if (receivedMessage.text) {
       console.log("Génération de la réponse Mistral...")
@@ -12,6 +12,8 @@ async function handleMessage(senderId, receivedMessage) {
       console.log("Réponse Mistral générée:", response)
       await sendTextMessage(senderId, response)
       console.log("Message envoyé avec succès")
+    } else {
+      console.log("Message reçu sans texte")
     }
   } catch (error) {
     console.error("Erreur lors du traitement du message:", error)
@@ -24,7 +26,6 @@ async function sendTextMessage(recipientId, messageText) {
   console.log("Début de sendTextMessage pour recipientId:", recipientId)
   console.log("Message à envoyer:", messageText)
 
-  // Diviser le message en morceaux de 2000 caractères maximum
   const chunks = messageText.match(/.{1,2000}/g) || []
 
   for (const chunk of chunks) {
@@ -41,6 +42,7 @@ async function sendTextMessage(recipientId, messageText) {
       await callSendAPI(messageData)
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error)
+      throw error // Propager l'erreur pour la gestion dans handleMessage
     }
   }
 
