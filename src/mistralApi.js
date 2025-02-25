@@ -38,7 +38,7 @@ async function generateMistralResponse(prompt) {
     return generatedResponse
   } catch (error) {
     console.error("Erreur détaillée lors de la génération de la réponse Mistral:", error)
-    return "Je suis désolé, mais je ne peux pas répondre pour le moment. Veuillez réessayer plus tard."
+    throw error // Propager l'erreur pour la gestion dans handleMessage
   }
 }
 
