@@ -2,11 +2,8 @@ const fetch = require("node-fetch")
 const { MISTRAL_API_KEY } = require("./config")
 
 async function generateMistralResponse(prompt) {
-  console.log("Génération de réponse Mistral pour:", prompt)
+  console.log("Début de generateMistralResponse pour prompt:", prompt)
   try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 secondes de timeout
-
     const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -18,11 +15,9 @@ async function generateMistralResponse(prompt) {
         messages: [{ role: "user", content: prompt }],
         max_tokens: 1000,
       }),
-      signal: controller.signal,
-      timeout: 30000, // 30 secondes de timeout
     })
 
-    clearTimeout(timeoutId)
+    console.log("Réponse reçue de l'API Mistral. Status:", response.status)
 
     if (!response.ok) {
       const errorBody = await response.text()
@@ -31,6 +26,8 @@ async function generateMistralResponse(prompt) {
     }
 
     const data = await response.json()
+    console.log("Données reçues de l'API Mistral:", JSON.stringify(data))
+
     let generatedResponse = data.choices[0].message.content
 
     if (generatedResponse.length > 4000) {
