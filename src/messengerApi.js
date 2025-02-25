@@ -15,17 +15,14 @@ async function handleMessage(senderId, receivedMessage) {
     }
   } catch (error) {
     console.error("Erreur lors du traitement du message:", error)
-    let errorMessage = "Désolé, j'ai rencontré une erreur en traitant votre message."
-    if (error.code === "ECONNRESET" || error.type === "system") {
-      errorMessage = "Désolé, il y a un problème de connexion. Veuillez réessayer dans quelques instants."
-    }
-    await sendTextMessage(senderId, errorMessage)
+    await sendTextMessage(senderId, "Désolé, j'ai rencontré une erreur en traitant votre message.")
   }
   console.log("Fin de handleMessage")
 }
 
 async function sendTextMessage(recipientId, messageText) {
-  console.log("Envoi de message à", recipientId, ":", messageText)
+  console.log("Début de sendTextMessage pour recipientId:", recipientId)
+  console.log("Message à envoyer:", messageText)
 
   // Diviser le message en morceaux de 2000 caractères maximum
   const chunks = messageText.match(/.{1,2000}/g) || []
@@ -46,25 +43,36 @@ async function sendTextMessage(recipientId, messageText) {
       console.error("Erreur lors de l'envoi du message:", error)
     }
   }
+
+  console.log("Fin de sendTextMessage")
 }
 
 async function callSendAPI(messageData) {
+  console.log("Début de callSendAPI avec messageData:", JSON.stringify(messageData))
   const url = `https://graph.facebook.com/v13.0/me/messages?access_token=${MESSENGER_PAGE_ACCESS_TOKEN}`
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(messageData),
-  })
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(messageData),
+    })
 
-  const body = await response.json()
+    console.log("Réponse reçue de l'API Facebook. Status:", response.status)
 
-  if (body.error) {
-    console.error("Erreur lors de l'appel à l'API Send:", body.error)
-    throw new Error(body.error.message)
+    const body = await response.json()
+    console.log("Réponse de l'API Facebook:", JSON.stringify(body))
+
+    if (body.error) {
+      console.error("Erreur lors de l'appel à l'API Send:", body.error)
+      throw new Error(body.error.message)
+    }
+
+    console.log("Message envoyé avec succès")
+  } catch (error) {
+    console.error("Erreur lors de l'appel à l'API Facebook:", error)
+    throw error
   }
-
-  console.log("Message envoyé avec succès")
 }
 
 module.exports = {
