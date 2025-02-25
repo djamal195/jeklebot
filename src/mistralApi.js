@@ -1,8 +1,26 @@
 const fetch = require("node-fetch")
 const { MISTRAL_API_KEY } = require("./config")
 
+function checkCreatorQuestion(prompt) {
+  const lowerPrompt = prompt.toLowerCase()
+  return (
+    lowerPrompt.includes("qui t'a créé") ||
+    lowerPrompt.includes("qui t'a construit") ||
+    lowerPrompt.includes("qui t'a développé") ||
+    lowerPrompt.includes("qui est ton créateur") ||
+    lowerPrompt.includes("qui est ton développeur")
+  )
+}
+
 async function generateMistralResponse(prompt) {
   console.log("Début de generateMistralResponse pour prompt:", prompt)
+
+  // Vérifier si la question concerne le créateur
+  if (checkCreatorQuestion(prompt)) {
+    console.log("Question sur le créateur détectée. Réponse personnalisée envoyée.")
+    return "J'ai été créé par Djamaldine. C'est un développeur talentueux qui m'a conçu pour aider les gens comme vous !"
+  }
+
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => {
