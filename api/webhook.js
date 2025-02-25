@@ -5,31 +5,27 @@ const { verifyWebhook } = require("../src/config")
 
 const app = express()
 
-// Middleware pour parser le corps des requêtes en JSON
 app.use(bodyParser.json())
 
-// Logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`)
-  console.log("Query:", req.query)
-  console.log("Body:", req.body)
+  console.log("Query:", JSON.stringify(req.query))
+  console.log("Body:", JSON.stringify(req.body))
   next()
 })
 
-// Route pour la vérification du webhook (GET request)
 app.get("/api/webhook", (req, res) => {
   console.log("Requête GET reçue pour la vérification du webhook")
   return verifyWebhook(req, res)
 })
 
-// Route principale pour le webhook (POST request)
-app.post("/api/webhook", (req, res) => {
+app.post("/api/webhook", async (req, res) => {
   console.log("Requête POST reçue du webhook")
   const body = req.body
 
   if (body.object === "page") {
     console.log("Événement de page reçu")
-    body.entry.forEach((entry) => {
+    for (const entry of body.entry) {
       const webhookEvent = entry.messaging[0]
       console.log("Événement Webhook reçu:", JSON.stringify(webhookEvent))
 
@@ -37,13 +33,16 @@ app.post("/api/webhook", (req, res) => {
 
       if (webhookEvent.message) {
         console.log("Message reçu, appel de handleMessage")
-        handleMessage(senderId, webhookEvent.message)
-          .then(() => console.log("handleMessage terminé avec succès"))
-          .catch((error) => console.error("Erreur lors du traitement du message:", error))
+        try {
+          await handleMessage(senderId, webhookEvent.message)
+          console.log("handleMessage terminé avec succès")
+        } catch (error) {
+          console.error("Erreur lors du traitement du message:", error)
+        }
       } else {
         console.log("Événement non reconnu:", webhookEvent)
       }
-    })
+    }
 
     res.status(200).send("EVENT_RECEIVED")
   } else {
@@ -52,7 +51,6 @@ app.post("/api/webhook", (req, res) => {
   }
 })
 
-// Gestion des erreurs
 app.use((err, req, res, next) => {
   console.error("Erreur non gérée:", err)
   res.status(500).send("Quelque chose s'est mal passé!")
