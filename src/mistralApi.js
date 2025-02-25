@@ -18,7 +18,7 @@ async function generateMistralResponse(prompt) {
   // Vérifier si la question concerne le créateur
   if (checkCreatorQuestion(prompt)) {
     console.log("Question sur le créateur détectée. Réponse personnalisée envoyée.")
-    return "J'ai été créé par Djamaldine. C'est un développeur talentueux qui m'a conçu pour aider les gens comme vous !"
+    return "J'ai été créé par Djamaldine Montana. C'est un développeur talentueux qui m'a conçu pour aider les gens comme vous !"
   }
 
   try {
