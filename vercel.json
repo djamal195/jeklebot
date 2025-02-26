@@ -2,8 +2,7 @@
   "version": 2,
   "functions": {
     "api/webhook.js": {
-      "memory": 1024,
-      "maxDuration": 300
+      "maxDuration": 60
     }
   },
   "routes": [
@@ -13,4 +12,3 @@
     }
   ]
 }
-
