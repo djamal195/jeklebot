@@ -1,92 +1,31 @@
 const fetch = require("node-fetch")
 const { MESSENGER_PAGE_ACCESS_TOKEN } = require("./config")
 const { generateMistralResponse } = require("./mistralApi")
-const { searchYoutube, downloadYoutubeVideo } = require("./youtubeApi")
 
 async function handleMessage(senderId, receivedMessage) {
   console.log("Début de handleMessage pour senderId:", senderId)
   console.log("Message reçu:", JSON.stringify(receivedMessage))
-
   try {
     if (receivedMessage.text) {
-      if (receivedMessage.text.toLowerCase().startsWith("youtube:")) {
-        const query = receivedMessage.text.slice(8).trim()
-        const videos = await searchYoutube(query)
-        await sendYoutubeResults(senderId, videos)
-      } else {
-        const response = await generateMistralResponse(receivedMessage.text)
-        await sendTextMessage(senderId, response)
-      }
-    } else if (receivedMessage.postback) {
-      const payload = JSON.parse(receivedMessage.postback.payload)
-      if (payload.type === "WATCH_VIDEO") {
-        await handleWatchVideo(senderId, payload.videoId)
-      }
+      console.log("Génération de la réponse Mistral...")
+      const response = await generateMistralResponse(receivedMessage.text)
+      console.log("Réponse Mistral générée:", response)
+      await sendTextMessage(senderId, response)
+      console.log("Message envoyé avec succès")
     } else {
-      await sendTextMessage(senderId, "Désolé, je ne peux traiter que des messages texte ou des actions spécifiques.")
+      console.log("Message reçu sans texte")
+      await sendTextMessage(senderId, "Désolé, je ne peux traiter que des messages texte.")
     }
   } catch (error) {
     console.error("Erreur lors du traitement du message:", error)
-    await sendTextMessage(senderId, "Désolé, j'ai rencontré une erreur en traitant votre demande.")
+    let errorMessage = "Désolé, j'ai rencontré une erreur en traitant votre message. Veuillez réessayer plus tard."
+    if (error.message.includes("timeout")) {
+      errorMessage =
+        "Désolé, la génération de la réponse a pris trop de temps. Veuillez réessayer avec une question plus courte ou plus simple."
+    }
+    await sendTextMessage(senderId, errorMessage)
   }
-}
-
-async function sendYoutubeResults(senderId, videos) {
-  const elements = videos.map((video) => ({
-    title: video.title,
-    subtitle: video.description,
-    image_url: video.thumbnails.high.url,
-    buttons: [
-      {
-        type: "postback",
-        title: "Regarder",
-        payload: JSON.stringify({ type: "WATCH_VIDEO", videoId: video.id }),
-      },
-    ],
-  }))
-
-  const messageData = {
-    recipient: { id: senderId },
-    message: {
-      attachment: {
-        type: "template",
-        payload: {
-          template_type: "generic",
-          elements: elements,
-        },
-      },
-    },
-  }
-
-  await callSendAPI(messageData)
-}
-
-async function handleWatchVideo(senderId, videoId) {
-  await sendTextMessage(senderId, "Je télécharge la vidéo, veuillez patienter...")
-  try {
-    const videoPath = await downloadYoutubeVideo(videoId)
-    await sendVideoMessage(senderId, videoPath)
-  } catch (error) {
-    console.error("Erreur lors du téléchargement de la vidéo:", error)
-    await sendTextMessage(senderId, "Désolé, je n'ai pas pu télécharger la vidéo. Veuillez réessayer plus tard.")
-  }
-}
-
-async function sendVideoMessage(recipientId, videoPath) {
-  const messageData = {
-    recipient: { id: recipientId },
-    message: {
-      attachment: {
-        type: "video",
-        payload: {
-          url: videoPath,
-          is_reusable: true,
-        },
-      },
-    },
-  }
-
-  await callSendAPI(messageData)
+  console.log("Fin de handleMessage")
 }
 
 async function sendTextMessage(recipientId, messageText) {
