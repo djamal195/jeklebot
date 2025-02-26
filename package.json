@@ -1,17 +1,23 @@
 {
-  "name": "messenger-mistral-bot",
+  "name": "jeklebot",
   "version": "1.0.0",
-  "description": "Chatbot Messenger utilisant Mistral AI",
+  "description": "Un bot Messenger utilisant l'API Mistral",
   "main": "api/webhook.js",
   "scripts": {
-    "start": "node api/webhook.js",
-    "dev": "node api/webhook.js"
+    "start": "node api/webhook.js"
   },
   "dependencies": {
+    "express": "^4.17.1",
     "body-parser": "^1.19.0",
     "dotenv": "^10.0.0",
-    "express": "^4.17.1",
-    "ngrok": "^5.0.0-beta.2",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "ytdl-core": "^4.11.5",
+    "youtube-search-api": "^1.2.1",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "fluent-ffmpeg": "^2.1.2"
+  },
+  "engines": {
+    "node": "14.x"
   }
 }
+
